@@ -9,16 +9,16 @@ public class ProductValidator : AbstractValidator<Product>
     {
         RuleFor(product => product.Code)
             .NotEmpty()
-            .MaxLength(50)
+            .MaximumLength(50)
             .WithMessage("Product code is required and cannot be longer than 50 characters.");
 
         RuleFor(product => product.Name)
             .NotEmpty()
-            .MaxLength(100)
+            .MaximumLength(100)
             .WithMessage("Product name is required and cannot be longer than 100 characters.");
 
         RuleFor(product => product.Description)
-            .MaxLength(500)
+            .MaximumLength(500)
             .When(product => !string.IsNullOrEmpty(product.Description))
             .WithMessage("Product description cannot be longer than 500 characters.");
 

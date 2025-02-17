@@ -1,16 +1,17 @@
-using Ambev.DeveloperEvaluation.Domain.Entities.Sales;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ambev.DeveloperEvaluation.ORM.Mapping;
 
-public class BranchMap : IEntityTypeConfiguration<Branch>
+public class BranchConfiguration : IEntityTypeConfiguration<Branch>
 {
     public void Configure(EntityTypeBuilder<Branch> builder)
     {
         builder.ToTable("Branches");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.Code)
             .IsRequired()
@@ -28,10 +29,11 @@ public class BranchMap : IEntityTypeConfiguration<Branch>
             .HasDefaultValue(true);
 
         builder.Property(x => x.CreatedAt)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("timestamp");
 
         builder.Property(x => x.UpdatedAt)
-            .IsRequired(false);
+            .HasColumnType("timestamp");
 
         builder.HasIndex(x => x.Code)
             .IsUnique();

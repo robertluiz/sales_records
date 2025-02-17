@@ -9,16 +9,16 @@ public class BranchValidator : AbstractValidator<Branch>
     {
         RuleFor(branch => branch.Code)
             .NotEmpty()
-            .MaxLength(50)
+            .MaximumLength(50)
             .WithMessage("Branch code is required and cannot be longer than 50 characters.");
 
         RuleFor(branch => branch.Name)
             .NotEmpty()
-            .MaxLength(100)
+            .MaximumLength(100)
             .WithMessage("Branch name is required and cannot be longer than 100 characters.");
 
         RuleFor(branch => branch.Address)
-            .MaxLength(200)
+            .MaximumLength(200)
             .When(branch => !string.IsNullOrEmpty(branch.Address))
             .WithMessage("Branch address cannot be longer than 200 characters.");
 

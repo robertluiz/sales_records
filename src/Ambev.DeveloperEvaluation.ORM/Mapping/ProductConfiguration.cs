@@ -1,16 +1,17 @@
-using Ambev.DeveloperEvaluation.Domain.Entities.Sales;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ambev.DeveloperEvaluation.ORM.Mapping;
 
-public class ProductMap : IEntityTypeConfiguration<Product>
+public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.ToTable("Products");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.Code)
             .IsRequired()
@@ -25,17 +26,18 @@ public class ProductMap : IEntityTypeConfiguration<Product>
 
         builder.Property(x => x.Price)
             .IsRequired()
-            .HasPrecision(18, 2);
+            .HasColumnType("decimal(18,2)");
 
         builder.Property(x => x.IsActive)
             .IsRequired()
             .HasDefaultValue(true);
 
         builder.Property(x => x.CreatedAt)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("timestamp");
 
         builder.Property(x => x.UpdatedAt)
-            .IsRequired(false);
+            .HasColumnType("timestamp");
 
         builder.HasIndex(x => x.Code)
             .IsUnique();

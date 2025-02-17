@@ -9,7 +9,7 @@ public class SaleValidator : AbstractValidator<Sale>
     {
         RuleFor(sale => sale.Number)
             .NotEmpty()
-            .MaxLength(50)
+            .MaximumLength(50)
             .WithMessage("Sale number is required and cannot be longer than 50 characters.");
 
         RuleFor(sale => sale.CustomerId)
