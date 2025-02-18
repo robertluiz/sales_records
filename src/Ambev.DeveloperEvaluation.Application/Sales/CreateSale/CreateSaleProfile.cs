@@ -20,7 +20,6 @@ public class CreateSaleProfile : Profile
 
         CreateMap<SaleItemCommand, SaleItem>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.Subtotal, opt => opt.Ignore())
             .ForMember(dest => dest.SaleId, opt => opt.Ignore());
 
         CreateMap<Sale, CreateSaleResult>();

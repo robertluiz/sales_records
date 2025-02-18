@@ -18,8 +18,7 @@ public class UpdateSaleProfile : Profile
 
         CreateMap<UpdateSaleItemCommand, SaleItem>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.SaleId, opt => opt.Ignore())
-            .ForMember(dest => dest.Subtotal, opt => opt.Ignore());
+            .ForMember(dest => dest.SaleId, opt => opt.Ignore());
 
         CreateMap<Sale, UpdateSaleResult>()
             .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch.Name));
