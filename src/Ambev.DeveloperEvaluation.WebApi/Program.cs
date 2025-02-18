@@ -14,7 +14,7 @@ namespace Ambev.DeveloperEvaluation.WebApi;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         try
         {
@@ -55,6 +55,59 @@ public class Program
             var app = builder.Build();
             app.UseMiddleware<ValidationExceptionMiddleware>();
 
+            // Check and apply pending migrations
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                var maxRetries = 5;
+                var retryCount = 0;
+                var connected = false;
+
+                while (!connected && retryCount < maxRetries)
+                {
+                    try
+                    {
+                        Log.Information("Attempting to connect to database... Attempt {RetryCount}", retryCount + 1);
+                        
+                        // Check for pending migrations
+                        var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+                        var pendingMigrationsList = pendingMigrations.ToList();
+                        
+                        if (pendingMigrationsList.Any())
+                        {
+                            Log.Information("Found {Count} pending migrations. Applying...", pendingMigrationsList.Count);
+                            foreach (var migration in pendingMigrationsList)
+                            {
+                                Log.Information("Applying migration: {Migration}", migration);
+                            }
+                            await dbContext.Database.MigrateAsync();
+                            Log.Information("Migrations applied successfully");
+                        }
+                        else
+                        {
+                            Log.Information("No pending migrations found");
+                        }
+
+                        connected = true;
+                        Log.Information("Database connection established successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        retryCount++;
+                        Log.Warning(ex, "Failed to connect to database. Attempt {RetryCount} of {MaxRetries}", retryCount, maxRetries);
+                        if (retryCount < maxRetries)
+                        {
+                            await Task.Delay(5000); // Wait 5 seconds before retrying
+                        }
+                        else
+                        {
+                            Log.Error(ex, "Could not establish database connection after {MaxRetries} attempts", maxRetries);
+                            throw;
+                        }
+                    }
+                }
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -70,11 +123,12 @@ public class Program
 
             app.MapControllers();
 
-            app.Run();
+            await app.RunAsync();
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "Application terminated unexpectedly");
+            throw;
         }
         finally
         {
