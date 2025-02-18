@@ -43,6 +43,11 @@ public class SaleItem : BaseEntity
     public decimal UnitPrice { get; set; }
     
     /// <summary>
+    /// Gets or sets the subtotal (quantity * unit price)
+    /// </summary>
+    public decimal Subtotal { get; set; }
+    
+    /// <summary>
     /// Gets or sets the discount percentage applied to this item.
     /// Based on quantity: 4+ items = 10%, 10-20 items = 20%
     /// </summary>

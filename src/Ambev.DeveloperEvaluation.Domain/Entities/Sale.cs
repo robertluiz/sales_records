@@ -23,6 +23,11 @@ public class Sale : BaseEntity
     public DateTime CreatedAt { get; set; }
     
     /// <summary>
+    /// Gets or sets the date and time of the sale.
+    /// </summary>
+    public DateTime SaleDate { get; set; }
+    
+    /// <summary>
     /// Gets or sets the customer ID associated with this sale.
     /// </summary>
     public Guid CustomerId { get; set; }

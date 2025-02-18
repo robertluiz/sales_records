@@ -20,9 +20,13 @@ public class CreateSaleProfile : Profile
 
         CreateMap<SaleItemCommand, SaleItem>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.TotalAmount, opt => opt.Ignore())
             .ForMember(dest => dest.SaleId, opt => opt.Ignore());
 
-        CreateMap<Sale, CreateSaleResult>();
-        CreateMap<SaleItem, SaleItemResult>();
+        CreateMap<Sale, CreateSaleResult>()
+            .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount));
+
+        CreateMap<SaleItem, SaleItemResult>()
+            .ForMember(dest => dest.Subtotal, opt => opt.MapFrom(src => src.TotalAmount));
     }
 } 
