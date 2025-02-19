@@ -1,6 +1,8 @@
 using Ambev.DeveloperEvaluation.Application.Sales.CancelSaleItem;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
@@ -16,6 +18,7 @@ public class CancelSaleItemHandlerTests
 {
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
+    private readonly IEventService _eventService;
     private readonly CancelSaleItemCommandValidator _validator;
     private readonly CancelSaleItemHandler _handler;
 
@@ -27,59 +30,65 @@ public class CancelSaleItemHandlerTests
     {
         _saleRepository = Substitute.For<ISaleRepository>();
         _mapper = Substitute.For<IMapper>();
+        _eventService = Substitute.For<IEventService>();
         _validator = new CancelSaleItemCommandValidator(_saleRepository);
 
         _handler = new CancelSaleItemHandler(
             _saleRepository,
             _mapper,
+            _eventService,
             _validator);
     }
 
     /// <summary>
     /// Tests that a valid sale item cancellation request is handled successfully.
     /// </summary>
-    [Fact(DisplayName = "Given valid cancellation data When canceling sale item Then returns success response")]
+    [Fact(DisplayName = "Given valid cancellation data When canceling item Then should return success response")]
     public async Task Handle_ValidRequest_ReturnsSuccessResponse()
     {
         // Arrange
-        var command = new CancelSaleItemCommand
+        var saleItem = new SaleItem
         {
-            SaleId = Guid.NewGuid(),
-            ItemId = Guid.NewGuid()
+            Id = Guid.NewGuid(),
+            ProductId = 1,
+            Quantity = 2,
+            UnitPrice = 50m,
+            Total = 100m
         };
 
         var sale = new Sale
         {
-            Id = command.SaleId,
-            Items = new List<SaleItem>
-            {
-                new()
-                {
-                    Id = command.ItemId,
-                    IsCancelled = false
-                }
-            }
+            Id = Guid.NewGuid(),
+            Items = new List<SaleItem> { saleItem }
         };
 
-        var result = new CancelSaleItemResult
+        var command = new CancelSaleItemCommand
         {
-            Id = command.ItemId,
-            IsCancelled = true
+            SaleId = sale.Id,
+            ItemId = saleItem.Id
         };
 
-        _saleRepository.GetByIdWithDetailsAsync(command.SaleId, Arg.Any<CancellationToken>())
+        var expectedResult = new CancelSaleItemResult();
+
+        _saleRepository.GetByIdWithDetailsAsync(sale.Id, Arg.Any<CancellationToken>())
             .Returns(sale);
         _mapper.Map<CancelSaleItemResult>(Arg.Any<SaleItem>())
-            .Returns(result);
+            .Returns(expectedResult);
 
-        // When
-        var cancelResult = await _handler.Handle(command, CancellationToken.None);
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
 
-        // Then
-        cancelResult.Should().NotBeNull();
-        cancelResult.Id.Should().Be(command.ItemId);
-        cancelResult.IsCancelled.Should().BeTrue();
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expectedResult);
+
         await _saleRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.Received(1).PublishSaleItemCancelledEvent(Arg.Is<SaleItemCancelledEvent>(e =>
+            e.Id == saleItem.Id &&
+            e.SaleId == sale.Id &&
+            e.ProductId == saleItem.ProductId &&
+            e.Quantity == saleItem.Quantity &&
+            e.RefundAmount == saleItem.Total));
     }
 
     /// <summary>
@@ -102,7 +111,7 @@ public class CancelSaleItemHandlerTests
     /// <summary>
     /// Tests that when sale is not found, an InvalidOperationException is thrown.
     /// </summary>
-    [Fact(DisplayName = "Given non-existent sale When canceling sale item Then throws InvalidOperationException")]
+    [Fact(DisplayName = "Dado venda inexistente Quando cancelar item Então deve lançar InvalidOperationException")]
     public async Task Handle_SaleNotFound_ThrowsInvalidOperationException()
     {
         // Arrange
@@ -115,69 +124,77 @@ public class CancelSaleItemHandlerTests
         _saleRepository.GetByIdWithDetailsAsync(command.SaleId, Arg.Any<CancellationToken>())
             .Returns((Sale?)null);
 
-        // When/Then
+        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(command, CancellationToken.None));
+
+        await _saleRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.DidNotReceive().PublishSaleItemCancelledEvent(Arg.Any<SaleItemCancelledEvent>());
     }
 
     /// <summary>
     /// Tests that when item is not found in sale, an InvalidOperationException is thrown.
     /// </summary>
-    [Fact(DisplayName = "Given non-existent item When canceling sale item Then throws InvalidOperationException")]
+    [Fact(DisplayName = "Dado item inexistente Quando cancelar item Então deve lançar InvalidOperationException")]
     public async Task Handle_ItemNotFound_ThrowsInvalidOperationException()
     {
         // Arrange
+        var sale = new Sale
+        {
+            Id = Guid.NewGuid(),
+            Items = new List<SaleItem>()
+        };
+
         var command = new CancelSaleItemCommand
         {
-            SaleId = Guid.NewGuid(),
+            SaleId = sale.Id,
             ItemId = Guid.NewGuid()
         };
 
-        var sale = new Sale
-        {
-            Id = command.SaleId,
-            Items = new List<SaleItem>() // Empty items list
-        };
-
-        _saleRepository.GetByIdWithDetailsAsync(command.SaleId, Arg.Any<CancellationToken>())
+        _saleRepository.GetByIdWithDetailsAsync(sale.Id, Arg.Any<CancellationToken>())
             .Returns(sale);
 
-        // When/Then
+        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(command, CancellationToken.None));
+
+        await _saleRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.DidNotReceive().PublishSaleItemCancelledEvent(Arg.Any<SaleItemCancelledEvent>());
     }
 
     /// <summary>
     /// Tests that when item is already cancelled, an InvalidOperationException is thrown.
     /// </summary>
-    [Fact(DisplayName = "Given already cancelled item When canceling sale item Then throws InvalidOperationException")]
+    [Fact(DisplayName = "Dado item já cancelado Quando cancelar item Então deve lançar InvalidOperationException")]
     public async Task Handle_ItemAlreadyCancelled_ThrowsInvalidOperationException()
     {
         // Arrange
-        var command = new CancelSaleItemCommand
+        var saleItem = new SaleItem
         {
-            SaleId = Guid.NewGuid(),
-            ItemId = Guid.NewGuid()
+            Id = Guid.NewGuid(),
+            IsCancelled = true
         };
 
         var sale = new Sale
         {
-            Id = command.SaleId,
-            Items = new List<SaleItem>
-            {
-                new()
-                {
-                    Id = command.ItemId,
-                    IsCancelled = true
-                }
-            }
+            Id = Guid.NewGuid(),
+            Items = new List<SaleItem> { saleItem }
         };
 
-        _saleRepository.GetByIdWithDetailsAsync(command.SaleId, Arg.Any<CancellationToken>())
+        var command = new CancelSaleItemCommand
+        {
+            SaleId = sale.Id,
+            ItemId = saleItem.Id
+        };
+
+        _saleRepository.GetByIdWithDetailsAsync(sale.Id, Arg.Any<CancellationToken>())
             .Returns(sale);
 
-        // When/Then
+        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             _handler.Handle(command, CancellationToken.None));
+
+        await _saleRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.DidNotReceive().PublishSaleItemCancelledEvent(Arg.Any<SaleItemCancelledEvent>());
     }
 } 

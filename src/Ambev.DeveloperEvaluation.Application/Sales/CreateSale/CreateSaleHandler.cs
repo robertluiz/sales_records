@@ -3,6 +3,8 @@ using MediatR;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using FluentValidation;
+using Ambev.DeveloperEvaluation.Domain.Events;
+using Ambev.DeveloperEvaluation.Domain.Services;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 
@@ -15,6 +17,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly CreateSaleCommandValidator _validator;
+    private readonly IEventService _eventService;
 
     /// <summary>
     /// Initializes a new instance of the handler with required dependencies
@@ -23,12 +26,14 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         ISaleRepository saleRepository,
         IProductRepository productRepository,
         IMapper mapper,
-        CreateSaleCommandValidator validator)
+        CreateSaleCommandValidator validator,
+        IEventService eventService)
     {
         _saleRepository = saleRepository;
         _productRepository = productRepository;
         _mapper = mapper;
         _validator = validator;
+        _eventService = eventService;
     }
 
     /// <summary>
@@ -73,6 +78,19 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         sale.CalculateTotals();
         await _saleRepository.AddAsync(sale, cancellationToken);
         await _saleRepository.SaveChangesAsync(cancellationToken);
+
+        var @event = new SaleCreatedEvent
+        {
+            Id = sale.Id,
+            BranchId = sale.BranchId,
+            CustomerId = sale.CustomerId,
+            SaleDate = sale.CreatedAt,
+            TotalAmount = sale.TotalAmount,
+            ItemCount = sale.Items.Count,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _eventService.PublishSaleCreatedEvent(@event);
 
         return _mapper.Map<CreateSaleResult>(sale);
     }

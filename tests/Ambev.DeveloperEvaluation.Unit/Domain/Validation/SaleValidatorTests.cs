@@ -14,7 +14,7 @@ public class SaleValidatorTests
         _validator = new SaleValidator();
     }
 
-    [Fact(DisplayName = "Venda válida deve passar na validação")]
+    [Fact(DisplayName = "Valid sale must pass the validation")]
     public void Given_ValidSale_When_Validated_Then_ShouldNotHaveErrors()
     {
         // Arrange
@@ -44,7 +44,7 @@ public class SaleValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
-    [Theory(DisplayName = "Número da venda inválido deve falhar na validação")]
+    [Theory(DisplayName = "Invalid sale number should fail validation")]
     [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
@@ -60,7 +60,7 @@ public class SaleValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.Number);
     }
 
-    [Fact(DisplayName = "BranchId vazio deve falhar na validação")]
+    [Fact(DisplayName = "Empty BranchId should fail validation")]
     public void Given_EmptyBranchId_When_Validated_Then_ShouldHaveError()
     {
         // Arrange
@@ -73,7 +73,7 @@ public class SaleValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.BranchId);
     }
 
-    [Fact(DisplayName = "CustomerId vazio deve falhar na validação")]
+    [Fact(DisplayName = "Empty CustomerId should fail validation")]
     public void Given_EmptyCustomerId_When_Validated_Then_ShouldHaveError()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class SaleValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.CustomerId);
     }
 
-    [Fact(DisplayName = "Data da venda no futuro deve falhar na validação")]
+    [Fact(DisplayName = "Sale date in the future should fail validation")]
     public void Given_FutureSaleDate_When_Validated_Then_ShouldHaveError()
     {
         // Arrange
@@ -99,7 +99,7 @@ public class SaleValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.SaleDate);
     }
 
-    [Fact(DisplayName = "Venda sem itens deve falhar na validação")]
+    [Fact(DisplayName = "Sale without items should fail validation")]
     public void Given_NoItems_When_Validated_Then_ShouldHaveError()
     {
         // Arrange
@@ -112,7 +112,7 @@ public class SaleValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.Items);
     }
 
-    [Fact(DisplayName = "Data de cancelamento anterior à criação deve falhar na validação")]
+    [Fact(DisplayName = "Cancellation date before creation date should fail validation")]
     public void Given_CancelledDateBeforeCreation_When_Validated_Then_ShouldHaveError()
     {
         // Arrange

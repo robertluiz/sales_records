@@ -2,6 +2,8 @@ using MediatR;
 using AutoMapper;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.Domain.Events;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CancelSale;
 
@@ -12,18 +14,22 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
 {
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
+    private readonly IEventService _eventService;
     private readonly CancelSaleCommandValidator _validator;
 
     /// <summary>
     /// Initializes a new instance of the handler with required dependencies
     /// </summary>
     public CancelSaleHandler(
-        ISaleRepository saleRepository, 
-        IMapper mapper)
+        ISaleRepository saleRepository,
+        IMapper mapper,
+        IEventService eventService,
+        CancelSaleCommandValidator validator)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
-        _validator = new CancelSaleCommandValidator(saleRepository);
+        _eventService = eventService;
+        _validator = validator;
     }
 
     /// <summary>
@@ -41,6 +47,16 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
         await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
         sale.Cancel();
+
+        var @event = new SaleCancelledEvent
+        {
+            Id = sale.Id,
+            BranchId = sale.BranchId,
+            RefundAmount = sale.TotalAmount,
+            CancelledAt = DateTime.UtcNow
+        };
+
+        await _eventService.PublishSaleCancelledEvent(@event);
         await _saleRepository.SaveChangesAsync(cancellationToken);
 
         return _mapper.Map<CancelSaleResult>(sale);

@@ -14,7 +14,7 @@ public class SaleItemValidatorTests
         _validator = new SaleItemValidator();
     }
 
-    [Fact(DisplayName = "Item de venda válido deve passar na validação")]
+    [Fact(DisplayName = "Valid sale item should pass validation")]
     public void Given_ValidSaleItem_When_Validated_Then_ShouldNotHaveErrors()
     {
         // Arrange
@@ -33,7 +33,7 @@ public class SaleItemValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
-    [Theory(DisplayName = "ProductId inválido deve falhar na validação")]
+    [Theory(DisplayName = "Invalid ProductId should fail validation")]
     [InlineData(0)]
     [InlineData(-1)]
     public void Given_InvalidProductId_When_Validated_Then_ShouldHaveError(int productId)
@@ -54,7 +54,7 @@ public class SaleItemValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.ProductId);
     }
 
-    [Theory(DisplayName = "Quantidade inválida deve falhar na validação")]
+    [Theory(DisplayName = "Invalid quantity should fail validation")]
     [InlineData(0)]
     [InlineData(-1)]
     public void Given_InvalidQuantity_When_Validated_Then_ShouldHaveError(int quantity)
@@ -75,7 +75,7 @@ public class SaleItemValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.Quantity);
     }
 
-    [Theory(DisplayName = "Preço unitário inválido deve falhar na validação")]
+    [Theory(DisplayName = "Invalid unit price should fail validation")]
     [InlineData(0)]
     [InlineData(-1)]
     public void Given_InvalidUnitPrice_When_Validated_Then_ShouldHaveError(decimal unitPrice)

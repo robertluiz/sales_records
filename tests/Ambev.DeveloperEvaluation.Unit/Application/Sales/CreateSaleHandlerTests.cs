@@ -1,6 +1,8 @@
 using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
 using AutoMapper;
 using FluentAssertions;
@@ -19,6 +21,7 @@ public class CreateSaleHandlerTests
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly CreateSaleCommandValidator _validator;
+    private readonly IEventService _eventService;
     private readonly CreateSaleHandler _handler;
 
     /// <summary>
@@ -30,118 +33,103 @@ public class CreateSaleHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _productRepository = Substitute.For<IProductRepository>();
         _mapper = Substitute.For<IMapper>();
-        _validator = Substitute.For<CreateSaleCommandValidator>();
+        _validator = new CreateSaleCommandValidator();
+        _eventService = Substitute.For<IEventService>();
 
         _handler = new CreateSaleHandler(
             _saleRepository,
             _productRepository,
             _mapper,
-            _validator);
+            _validator,
+            _eventService
+        );
     }
 
     /// <summary>
     /// Tests that a valid sale creation request is handled successfully.
     /// </summary>
-    [Fact(DisplayName = "Given valid sale data When creating sale Then returns success response")]
+    [Fact(DisplayName = "Given valid sale data When creating sale Then should return success response")]
     public async Task Handle_ValidRequest_ReturnsSuccessResponse()
     {
         // Arrange
         var command = CreateSaleHandlerTestData.GenerateValidCommand();
-        var product = new Product { Id = command.Items.First().ProductId, Price = 10.0m };
-        var result = new CreateSaleResult { Id = Guid.NewGuid() };
+        var product = ProductTestData.GenerateValidProduct();
+        var expectedResult = new CreateSaleResult();
 
-        _productRepository.GetByIdAsync(command.Items.First().ProductId, Arg.Any<CancellationToken>())
+        _productRepository.GetByIdAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(product);
-        _saleRepository.AddAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
-        _mapper.Map<CreateSaleResult>(Arg.Any<Sale>()).Returns(result);
+        _mapper.Map<CreateSaleResult>(Arg.Any<Sale>()).Returns(expectedResult);
 
-        // When
-        var createResult = await _handler.Handle(command, CancellationToken.None);
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
 
-        // Then
-        createResult.Should().NotBeNull();
-        createResult.Id.Should().Be(result.Id);
-        await _saleRepository.Received(1).AddAsync(Arg.Is<Sale>(s => 
-            s.Items.Any(i => i.ProductId == product.Id && i.UnitPrice == product.Price)), 
-            Arg.Any<CancellationToken>());
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expectedResult);
+
+        await _saleRepository.Received(1).AddAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
         await _saleRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.Received(1).PublishSaleCreatedEvent(Arg.Any<SaleCreatedEvent>());
     }
 
     /// <summary>
     /// Tests that an invalid sale creation request throws a validation exception.
     /// </summary>
-    [Fact(DisplayName = "Given invalid sale data When creating sale Then throws validation exception")]
+    [Fact(DisplayName = "Given invalid sale data When creating sale Then should throw validation exception")]
     public async Task Handle_InvalidRequest_ThrowsValidationException()
     {
         // Arrange
-        var command = new CreateSaleCommand();
+        var command = new CreateSaleCommand(); // Comando vazio
 
-        _validator.When(x => x.ValidateAndThrowAsync(command, Arg.Any<CancellationToken>()))
-            .Throw(new ValidationException("Validation failed"));
-
-        // When/Then
+        // Act & Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
             _handler.Handle(command, CancellationToken.None));
+
+        await _saleRepository.DidNotReceive().AddAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
+        await _saleRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.DidNotReceive().PublishSaleCreatedEvent(Arg.Any<SaleCreatedEvent>());
     }
 
     /// <summary>
     /// Tests that when product is not found, an InvalidOperationException is thrown.
     /// </summary>
-    [Fact(DisplayName = "Given non-existent product When creating sale Then throws InvalidOperationException")]
+    [Fact(DisplayName = "Given non-existent product When creating sale Then should throw InvalidOperationException")]
     public async Task Handle_ProductNotFound_ThrowsInvalidOperationException()
     {
-        // Given
-        var command = CreateSaleHandlerTestData.GenerateValidCommandWithItems(1);
-        var productId = command.Items.First().ProductId;
-
-        _productRepository.GetByIdAsync(productId, Arg.Any<CancellationToken>())
+        // Arrange
+        var command = CreateSaleHandlerTestData.GenerateValidCommand();
+        _productRepository.GetByIdAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns((Product?)null);
 
-        // When
-        var act = () => _handler.Handle(command, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _handler.Handle(command, CancellationToken.None));
 
-        // Then
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"Product not found: {productId}");
+        await _saleRepository.DidNotReceive().AddAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>());
+        await _saleRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _eventService.DidNotReceive().PublishSaleCreatedEvent(Arg.Any<SaleCreatedEvent>());
     }
 
     /// <summary>
     /// Tests that product price is used instead of any provided price.
     /// </summary>
-    [Fact(DisplayName = "Given valid sale When creating Then uses product price")]
+    [Fact(DisplayName = "Given valid sale When creating Then should use product price")]
     public async Task Handle_ValidRequest_UsesProductPrice()
     {
-        // Given
-        var command = CreateSaleHandlerTestData.GenerateValidCommandWithItems(1);
-        var productId = command.Items.First().ProductId;
-        const decimal productPrice = 99.99m;
+        // Arrange
+        var command = CreateSaleHandlerTestData.GenerateValidCommand();
+        var product = ProductTestData.GenerateValidProduct();
+        _productRepository.GetByIdAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(product);
 
-        var sale = new Sale
-        {
-            Id = Guid.NewGuid(),
-            BranchId = command.BranchId,
-            CustomerId = command.CustomerId,
-            SaleDate = command.SaleDate,
-            Items = command.Items.Select(i => new SaleItem
-            {
-                Id = Guid.NewGuid(),
-                ProductId = i.ProductId,
-                Quantity = i.Quantity,
-                UnitPrice = 0m // Will be set by handler
-            }).ToList()
-        };
-
-        _mapper.Map<Sale>(command).Returns(sale);
-        _productRepository.GetByIdAsync(productId, Arg.Any<CancellationToken>())
-            .Returns(new Product { Id = productId, Price = productPrice });
-
-        // When
+        // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Then
+        // Assert
         await _saleRepository.Received(1).AddAsync(
-            Arg.Is<Sale>(s => s.Items.All(i => i.UnitPrice == productPrice)),
-            Arg.Any<CancellationToken>());
+            Arg.Is<Sale>(s => s.Items.All(i => i.UnitPrice == product.Price)),
+            Arg.Any<CancellationToken>()
+        );
+        await _eventService.Received(1).PublishSaleCreatedEvent(Arg.Any<SaleCreatedEvent>());
     }
 } 

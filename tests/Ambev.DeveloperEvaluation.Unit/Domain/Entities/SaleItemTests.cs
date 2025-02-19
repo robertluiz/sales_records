@@ -6,7 +6,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Domain.Entities;
 
 public class SaleItemTests
 {
-    [Theory(DisplayName = "Deve aplicar 10% de desconto para quantidades entre 4 e 9 itens")]
+    [Theory(DisplayName = "Should apply 10% discount for quantities between 4 and 9 items")]
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(9)]
@@ -30,7 +30,7 @@ public class SaleItemTests
         item.Total.Should().Be(quantity * 100 * 0.9m);
     }
 
-    [Theory(DisplayName = "Deve aplicar 20% de desconto para quantidades entre 10 e 20 itens")]
+    [Theory(DisplayName = "Should apply 20% discount for quantities between 10 and 20 items")]
     [InlineData(10)]
     [InlineData(15)]
     [InlineData(20)]
@@ -54,7 +54,7 @@ public class SaleItemTests
         item.Total.Should().Be(quantity * 100 * 0.8m);
     }
 
-    [Theory(DisplayName = "Não deve aplicar desconto para quantidades menores que 4 itens")]
+    [Theory(DisplayName = "Should not apply discount for quantities less than 4 items")]
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
@@ -78,7 +78,7 @@ public class SaleItemTests
         item.Total.Should().Be(quantity * 100);
     }
 
-    [Theory(DisplayName = "Deve lançar exceção para quantidades maiores que 20 itens")]
+    [Theory(DisplayName = "Should throw exception for quantities greater than 20 items")]
     [InlineData(21)]
     [InlineData(30)]
     [InlineData(100)]
@@ -96,7 +96,7 @@ public class SaleItemTests
         Assert.Throws<InvalidOperationException>(() => item.CalculateDiscount());
     }
 
-    [Fact(DisplayName = "Deve lançar exceção ao tentar aplicar desconto em quantidade menor que 4")]
+    [Fact(DisplayName = "Should throw exception when trying to apply discount for less than 4 items")]
     public void CalculateDiscount_ShouldThrowException_WhenTryingToApplyDiscountForLessThan4Items()
     {
         // Arrange

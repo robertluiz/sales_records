@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.Services;
+using Ambev.DeveloperEvaluation.WebApi.Extensions;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -73,6 +76,9 @@ public class Program
             );
 
             builder.Services.AddJwtAuthentication(builder.Configuration);
+
+            builder.Services.AddRebusConfiguration();
+            builder.Services.AddScoped<IEventService, RebusEventService>();
 
             builder.RegisterDependencies();
 
