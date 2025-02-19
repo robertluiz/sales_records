@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ambev.DeveloperEvaluation.ORM.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    [Migration("20250219111933_AddDiscountAmountColumn")]
-    partial class AddDiscountAmountColumn
+    [Migration("20250219204930_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,7 +42,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -55,7 +55,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.HasKey("Id");
 
@@ -70,7 +70,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
                             Address = "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
                             Code = "MATRIX-001",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "São Paulo Headquarters"
                         },
@@ -79,7 +79,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             Id = new Guid("9c9e6679-7425-40de-944b-e07fc1f90ae8"),
                             Address = "Av. Rio Branco, 500 - Centro, Rio de Janeiro - RJ",
                             Code = "BRANCH-RJ-001",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "Rio de Janeiro Branch"
                         },
@@ -88,7 +88,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             Id = new Guid("5c9e6679-7425-40de-944b-e07fc1f90ae9"),
                             Address = "Av. Afonso Pena, 2000 - Centro, Belo Horizonte - MG",
                             Code = "BRANCH-BH-001",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "Belo Horizonte Branch"
                         },
@@ -97,7 +97,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             Id = new Guid("3c9e6679-7425-40de-944b-e07fc1f90ae0"),
                             Address = "Rua XV de Novembro, 1500 - Centro, Curitiba - PR",
                             Code = "BRANCH-CWB-001",
-                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "Curitiba Branch"
                         });
@@ -161,6 +161,60 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .IsUnique();
 
                     b.ToTable("Products", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "Cervejas",
+                            Code = "BEER-001",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Cerveja Brahma Duplo Malte 350ml",
+                            Image = "brahma-duplo-malte.jpg",
+                            IsActive = true,
+                            Name = "Brahma Duplo Malte 350ml",
+                            Price = 4.99m,
+                            Title = "Brahma Duplo Malte"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "Cervejas",
+                            Code = "BEER-002",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Cerveja Skol Puro Malte 350ml",
+                            Image = "skol-puro-malte.jpg",
+                            IsActive = true,
+                            Name = "Skol Puro Malte 350ml",
+                            Price = 4.49m,
+                            Title = "Skol Puro Malte"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "Cervejas",
+                            Code = "BEER-003",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Cerveja Original 600ml",
+                            Image = "original.jpg",
+                            IsActive = true,
+                            Name = "Cerveja Original 600ml",
+                            Price = 8.99m,
+                            Title = "Original"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "Cervejas Premium",
+                            Code = "BEER-004",
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Cerveja Corona Extra 330ml",
+                            Image = "corona-extra.jpg",
+                            IsActive = true,
+                            Name = "Cerveja Corona Extra 330ml",
+                            Price = 7.99m,
+                            Title = "Corona Extra"
+                        });
                 });
 
             modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.Sale", b =>
@@ -282,7 +336,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -310,7 +364,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -320,6 +374,30 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae1"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@ambev.com.br",
+                            Password = "AQAAAAIAAYagAAAAEPVEyR7qQKqgXgGUPtQzreG7Yl1Pq7FWvQE0atQQjJzPe7vxKrCxZhQGz/AJvEXvww==",
+                            Phone = "(11) 99999-9999",
+                            Role = "Admin",
+                            Status = "Active",
+                            Username = "admin"
+                        },
+                        new
+                        {
+                            Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae2"),
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "customer@email.com",
+                            Password = "AQAAAAIAAYagAAAAEPVEyR7qQKqgXgGUPtQzreG7Yl1Pq7FWvQE0atQQjJzPe7vxKrCxZhQGz/AJvEXvww==",
+                            Phone = "(11) 88888-8888",
+                            Role = "Customer",
+                            Status = "Active",
+                            Username = "customer"
+                        });
                 });
 
             modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.Product", b =>
@@ -347,6 +425,32 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("ProductId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    ProductId = 1,
+                                    Count = 150,
+                                    Rate = 4.5m
+                                },
+                                new
+                                {
+                                    ProductId = 2,
+                                    Count = 120,
+                                    Rate = 4.2m
+                                },
+                                new
+                                {
+                                    ProductId = 3,
+                                    Count = 200,
+                                    Rate = 4.8m
+                                },
+                                new
+                                {
+                                    ProductId = 4,
+                                    Count = 180,
+                                    Rate = 4.7m
+                                });
                         });
 
                     b.Navigation("Rating")

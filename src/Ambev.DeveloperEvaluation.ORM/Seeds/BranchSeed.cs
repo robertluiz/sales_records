@@ -14,7 +14,7 @@ public static class BranchSeed
     /// <param name="modelBuilder">The Entity Framework model builder</param>
     public static void Seed(ModelBuilder modelBuilder)
     {
-        var seedDate = new DateTime(2024, 1, 1);
+        var seedDate = DateTime.SpecifyKind(new DateTime(2024, 1, 1), DateTimeKind.Utc);
 
         modelBuilder.Entity<Branch>().HasData(
             new Branch

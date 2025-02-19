@@ -30,10 +30,10 @@ public class BranchConfiguration : IEntityTypeConfiguration<Branch>
 
         builder.Property(x => x.CreatedAt)
             .IsRequired()
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         builder.Property(x => x.UpdatedAt)
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         builder.HasIndex(x => x.Code)
             .IsUnique();

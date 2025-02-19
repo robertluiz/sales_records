@@ -25,6 +25,8 @@ public class DefaultContext : DbContext
         
         // Apply seed data
         BranchSeed.Seed(modelBuilder);
+        ProductSeed.Seed(modelBuilder);
+        UserSeed.Seed(modelBuilder);
         
         base.OnModelCreating(modelBuilder);
     }

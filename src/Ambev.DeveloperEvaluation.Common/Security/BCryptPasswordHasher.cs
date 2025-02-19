@@ -7,6 +7,8 @@ namespace Ambev.DeveloperEvaluation.Common.Security;
 /// </summary>
 public class BCryptPasswordHasher : IPasswordHasher
 {
+    private const int WorkFactor = 11;
+
     /// <summary>
     /// Hashes a plain text password using BCrypt algorithm.
     /// </summary>
@@ -14,7 +16,7 @@ public class BCryptPasswordHasher : IPasswordHasher
     /// <returns>The BCrypt hashed password.</returns>
     public string HashPassword(string password)
     {
-        return BCrypt.Net.BCrypt.HashPassword(password);
+        return BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
     }
 
     /// <summary>
@@ -25,6 +27,13 @@ public class BCryptPasswordHasher : IPasswordHasher
     /// <returns>True if the password matches the hash, false otherwise.</returns>
     public bool VerifyPassword(string password, string hash)
     {
-        return BCrypt.Net.BCrypt.Verify(password, hash);
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(password, hash);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }
