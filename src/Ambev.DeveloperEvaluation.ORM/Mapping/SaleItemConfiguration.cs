@@ -14,7 +14,8 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
         builder.Property(x => x.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.ProductId)
-            .IsRequired();
+            .IsRequired()
+            .HasColumnType("integer");
 
         builder.Property(x => x.Quantity)
             .IsRequired()
@@ -57,7 +58,7 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Product)
-            .WithMany()
+            .WithMany(x => x.SaleItems)
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
     }

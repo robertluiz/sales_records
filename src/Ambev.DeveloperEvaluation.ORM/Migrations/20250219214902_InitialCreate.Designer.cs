@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ambev.DeveloperEvaluation.ORM.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    [Migration("20250219204930_InitialCreate")]
+    [Migration("20250219214902_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -143,7 +143,8 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -296,9 +297,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ProductId1")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -320,8 +318,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductId1");
 
                     b.HasIndex("SaleId");
 
@@ -381,7 +377,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae1"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@ambev.com.br",
-                            Password = "AQAAAAIAAYagAAAAEPVEyR7qQKqgXgGUPtQzreG7Yl1Pq7FWvQE0atQQjJzPe7vxKrCxZhQGz/AJvEXvww==",
+                            Password = "$2a$11$H0s1782gZrwdI8HwPqMw9u3lmrVuCMwpLYzjJL6diAP3b3Z3wxxze",
                             Phone = "(11) 99999-9999",
                             Role = "Admin",
                             Status = "Active",
@@ -392,7 +388,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae2"),
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "customer@email.com",
-                            Password = "AQAAAAIAAYagAAAAEPVEyR7qQKqgXgGUPtQzreG7Yl1Pq7FWvQE0atQQjJzPe7vxKrCxZhQGz/AJvEXvww==",
+                            Password = "$2a$11$H0s1782gZrwdI8HwPqMw9u3lmrVuCMwpLYzjJL6diAP3b3Z3wxxze",
                             Phone = "(11) 88888-8888",
                             Role = "Customer",
                             Status = "Active",
@@ -408,16 +404,13 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                                 .HasColumnType("integer");
 
                             b1.Property<int>("Count")
-                                .ValueGeneratedOnAdd()
                                 .HasColumnType("integer")
-                                .HasDefaultValue(0)
-                                .HasColumnName("RatingCount");
+                                .HasColumnName("Rating_Count");
 
                             b1.Property<decimal>("Rate")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("decimal(3,2)")
-                                .HasDefaultValue(0m)
-                                .HasColumnName("Rating");
+                                .HasPrecision(3, 2)
+                                .HasColumnType("numeric(3,2)")
+                                .HasColumnName("Rating_Rate");
 
                             b1.HasKey("ProductId");
 
@@ -479,14 +472,10 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
             modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.SaleItem", b =>
                 {
                     b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Product", "Product")
-                        .WithMany()
+                        .WithMany("SaleItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Product", null)
-                        .WithMany("SaleItems")
-                        .HasForeignKey("ProductId1");
 
                     b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Sale", "Sale")
                         .WithMany("Items")

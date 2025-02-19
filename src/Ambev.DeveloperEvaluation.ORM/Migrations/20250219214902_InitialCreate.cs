@@ -43,9 +43,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Category = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Image = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    Rating = table.Column<decimal>(type: "numeric(3,2)", nullable: false, defaultValue: 0m),
-                    RatingCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Rating_Rate = table.Column<decimal>(type: "numeric(3,2)", precision: 3, scale: 2, nullable: false),
+                    Rating_Count = table.Column<int>(type: "integer", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamptz", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamptz", nullable: true)
@@ -122,8 +122,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     Total = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     IsCancelled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CancelledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamptz", nullable: false),
-                    ProductId1 = table.Column<int>(type: "integer", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamptz", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -134,11 +133,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_SaleItems_Products_ProductId1",
-                        column: x => x.ProductId1,
-                        principalTable: "Products",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_SaleItems_Sales_SaleId",
                         column: x => x.SaleId,
@@ -160,7 +154,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
 
             migrationBuilder.InsertData(
                 table: "Products",
-                columns: new[] { "Id", "Category", "Code", "CreatedAt", "Description", "Image", "IsActive", "Name", "Price", "Title", "UpdatedAt", "RatingCount", "Rating" },
+                columns: new[] { "Id", "Category", "Code", "CreatedAt", "Description", "Image", "IsActive", "Name", "Price", "Title", "UpdatedAt", "Rating_Count", "Rating_Rate" },
                 values: new object[,]
                 {
                     { 1, "Cervejas", "BEER-001", new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Cerveja Brahma Duplo Malte 350ml", "brahma-duplo-malte.jpg", true, "Brahma Duplo Malte 350ml", 4.99m, "Brahma Duplo Malte", null, 150, 4.5m },
@@ -199,11 +193,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "IX_SaleItems_ProductId",
                 table: "SaleItems",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SaleItems_ProductId1",
-                table: "SaleItems",
-                column: "ProductId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SaleItems_SaleId",

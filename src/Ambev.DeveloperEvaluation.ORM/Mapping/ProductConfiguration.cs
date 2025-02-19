@@ -1,5 +1,4 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,6 +18,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id)
+            .HasColumnType("integer")
             .ValueGeneratedOnAdd();
 
         builder.Property(x => x.Code)
@@ -45,19 +45,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(x => x.Price)
             .IsRequired()
-            .HasColumnType("decimal(18,2)");
-
-        builder.OwnsOne(x => x.Rating, rating =>
-        {
-            rating.Property(r => r.Rate)
-                .HasColumnName("Rating")
-                .HasColumnType("decimal(3,2)")
-                .HasDefaultValue(0);
-
-            rating.Property(r => r.Count)
-                .HasColumnName("RatingCount")
-                .HasDefaultValue(0);
-        });
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.IsActive)
             .IsRequired()
@@ -69,6 +57,21 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(x => x.UpdatedAt)
             .HasColumnType("timestamptz");
+
+        builder.OwnsOne(x => x.Rating, rating =>
+        {
+            rating.Property(r => r.Rate)
+                .HasColumnName("Rating_Rate")
+                .HasPrecision(3, 2);
+
+            rating.Property(r => r.Count)
+                .HasColumnName("Rating_Count");
+        });
+
+        builder.HasMany(x => x.SaleItems)
+            .WithOne(x => x.Product)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.Code)
             .IsUnique();

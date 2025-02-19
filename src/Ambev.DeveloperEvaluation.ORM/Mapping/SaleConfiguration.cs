@@ -25,9 +25,17 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
             .IsRequired()
             .HasColumnType("timestamptz");
 
+        builder.Property(x => x.Subtotal)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
+        builder.Property(x => x.DiscountAmount)
+            .IsRequired()
+            .HasPrecision(18, 2);
+
         builder.Property(x => x.TotalAmount)
             .IsRequired()
-            .HasColumnType("decimal(18,2)");
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.IsCancelled)
             .IsRequired()

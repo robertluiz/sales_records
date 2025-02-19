@@ -52,8 +52,10 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         var sale = new Sale
         {
             CreatedAt = DateTime.UtcNow,
+            SaleDate = request.SaleDate,
             Number = $"SALE-{DateTime.UtcNow:yyyyMMddHHmmss}",
             BranchId = request.BranchId,
+            CustomerId = request.CustomerId,
             Items = new List<SaleItem>()
         };
 
@@ -84,7 +86,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
             Id = sale.Id,
             BranchId = sale.BranchId,
             CustomerId = sale.CustomerId,
-            SaleDate = sale.CreatedAt,
+            SaleDate = sale.SaleDate,
             TotalAmount = sale.TotalAmount,
             ItemCount = sale.Items.Count,
             CreatedAt = DateTime.UtcNow
