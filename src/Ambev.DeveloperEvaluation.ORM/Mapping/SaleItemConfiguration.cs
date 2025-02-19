@@ -13,40 +13,51 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
 
+        builder.Property(x => x.ProductId)
+            .IsRequired();
+
         builder.Property(x => x.Quantity)
             .IsRequired()
             .HasColumnType("integer");
 
         builder.Property(x => x.UnitPrice)
             .IsRequired()
-            .HasColumnType("decimal(18,2)");
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.DiscountPercentage)
             .IsRequired()
-            .HasColumnType("decimal(5,2)")
-            .HasDefaultValue(0);
+            .HasPrecision(5, 2);
 
-        builder.Property(x => x.TotalAmount)
+        builder.Property(x => x.DiscountAmount)
             .IsRequired()
-            .HasColumnType("decimal(18,2)");
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.Subtotal)
             .IsRequired()
-            .HasColumnType("decimal(18,2)");
+            .HasPrecision(18, 2);
+
+        builder.Property(x => x.Total)
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(x => x.IsCancelled)
             .IsRequired()
             .HasDefaultValue(false);
 
         builder.Property(x => x.CancelledAt)
-            .HasColumnType("timestamptz");
+            .IsRequired(false);
 
         builder.Property(x => x.CreatedAt)
             .IsRequired()
             .HasColumnType("timestamptz");
 
+        builder.HasOne(x => x.Sale)
+            .WithMany(x => x.Items)
+            .HasForeignKey(x => x.SaleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne(x => x.Product)
-            .WithMany(x => x.SaleItems)
+            .WithMany()
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
     }

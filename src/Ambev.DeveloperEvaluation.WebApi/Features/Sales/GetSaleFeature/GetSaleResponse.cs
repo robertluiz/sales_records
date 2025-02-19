@@ -21,9 +21,34 @@ public class GetSaleResponse
     public DateTime SaleDate { get; set; }
 
     /// <summary>
-    /// Gets or sets the total amount of the sale
+    /// Gets or sets the subtotal amount before discounts
+    /// </summary>
+    public decimal Subtotal { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total discount amount
+    /// </summary>
+    public decimal DiscountAmount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total amount after discounts
     /// </summary>
     public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the sale is cancelled
+    /// </summary>
+    public bool IsCancelled { get; set; }
+
+    /// <summary>
+    /// Gets or sets when the sale was cancelled
+    /// </summary>
+    public DateTime? CancelledAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets when the sale was created
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the sale items
@@ -44,7 +69,12 @@ public class GetSaleItemResponse
     /// <summary>
     /// Gets or sets the product ID
     /// </summary>
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the product title
+    /// </summary>
+    public string ProductTitle { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the quantity sold
@@ -57,7 +87,32 @@ public class GetSaleItemResponse
     public decimal UnitPrice { get; set; }
 
     /// <summary>
-    /// Gets or sets the subtotal (quantity * unit price)
+    /// Gets or sets the discount percentage (0-100)
+    /// </summary>
+    public decimal DiscountPercentage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the discount amount
+    /// </summary>
+    public decimal DiscountAmount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the subtotal before discount (quantity * unit price)
     /// </summary>
     public decimal Subtotal { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total after discount
+    /// </summary>
+    public decimal Total { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the item is cancelled
+    /// </summary>
+    public bool IsCancelled { get; set; }
+
+    /// <summary>
+    /// Gets or sets when the item was cancelled
+    /// </summary>
+    public DateTime? CancelledAt { get; set; }
 } 

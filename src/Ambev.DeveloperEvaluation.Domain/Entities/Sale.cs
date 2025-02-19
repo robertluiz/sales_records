@@ -48,8 +48,17 @@ public class Sale : BaseEntity
     public virtual Branch Branch { get; set; } = null!;
     
     /// <summary>
-    /// Gets or sets the total amount of the sale.
-    /// This is calculated based on the items and their discounts.
+    /// Gets or sets the subtotal amount before discounts.
+    /// </summary>
+    public decimal Subtotal { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the total discount amount.
+    /// </summary>
+    public decimal DiscountAmount { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the total amount after discounts.
     /// </summary>
     public decimal TotalAmount { get; set; }
     
@@ -66,23 +75,33 @@ public class Sale : BaseEntity
     /// <summary>
     /// Gets or sets the collection of items in this sale.
     /// </summary>
-    public virtual ICollection<SaleItem> Items { get; set; }
+    public virtual ICollection<SaleItem> Items { get; set; } = new List<SaleItem>();
 
     /// <summary>
     /// Initializes a new instance of the Sale class.
     /// </summary>
     public Sale()
     {
-        Items = new List<SaleItem>();
         CreatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Calculates the total amount of the sale based on all items.
+    /// Calculates the total amounts for the sale.
     /// </summary>
-    public void CalculateTotalAmount()
+    public void CalculateTotals()
     {
-        TotalAmount = Items.Sum(item => item.TotalAmount);
+        Subtotal = 0;
+        DiscountAmount = 0;
+        TotalAmount = 0;
+
+        var activeItems = Items.Where(i => !i.IsCancelled);
+        foreach (var item in activeItems)
+        {
+            item.CalculateDiscount();
+            Subtotal += item.Subtotal;
+            DiscountAmount += item.DiscountAmount;
+            TotalAmount += item.Total;
+        }
     }
     
     /// <summary>
@@ -94,7 +113,28 @@ public class Sale : BaseEntity
         {
             IsCancelled = true;
             CancelledAt = DateTime.UtcNow;
+
+            foreach (var item in Items)
+            {
+                item.Cancel();
+            }
         }
+    }
+
+    /// <summary>
+    /// Cancels a specific item in the sale.
+    /// </summary>
+    /// <param name="itemId">The ID of the item to cancel.</param>
+    public void CancelItem(Guid itemId)
+    {
+        var item = Items.FirstOrDefault(i => i.Id == itemId);
+        if (item == null)
+        {
+            throw new InvalidOperationException("Item not found");
+        }
+        
+        item.Cancel();
+        CalculateTotals();
     }
 
     /// <summary>

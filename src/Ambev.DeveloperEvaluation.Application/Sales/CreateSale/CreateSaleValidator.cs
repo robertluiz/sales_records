@@ -48,10 +48,8 @@ public class SaleItemCommandValidator : AbstractValidator<SaleItemCommand>
 
         RuleFor(x => x.Quantity)
             .GreaterThan(0)
-            .WithMessage("Quantity must be greater than zero");
-
-        RuleFor(x => x.UnitPrice)
-            .GreaterThan(0)
-            .WithMessage("Unit price must be greater than zero");
+            .WithMessage("Quantity must be greater than zero")
+            .LessThanOrEqualTo(20)
+            .WithMessage("Maximum quantity per item is 20");
     }
 } 

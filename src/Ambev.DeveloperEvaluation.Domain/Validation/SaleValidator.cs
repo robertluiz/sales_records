@@ -1,43 +1,49 @@
-using Ambev.DeveloperEvaluation.Domain.Entities;
 using FluentValidation;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 
 namespace Ambev.DeveloperEvaluation.Domain.Validation;
 
+/// <summary>
+/// Validator for the Sale entity
+/// </summary>
 public class SaleValidator : AbstractValidator<Sale>
 {
+    /// <summary>
+    /// Initializes a new instance of the validator with defined rules
+    /// </summary>
     public SaleValidator()
     {
-        RuleFor(sale => sale.Number)
+        RuleFor(x => x.Number)
             .NotEmpty()
-            .MaximumLength(50)
-            .WithMessage("Sale number is required and cannot be longer than 50 characters.");
+            .WithMessage("Sale number is required");
 
-        RuleFor(sale => sale.CustomerId)
+        RuleFor(x => x.BranchId)
             .NotEmpty()
-            .WithMessage("Customer is required.");
+            .WithMessage("Branch ID is required");
 
-        RuleFor(sale => sale.BranchId)
+        RuleFor(x => x.CustomerId)
             .NotEmpty()
-            .WithMessage("Branch is required.");
+            .WithMessage("Customer ID is required");
 
-        RuleFor(sale => sale.TotalAmount)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("Total amount cannot be negative.");
-
-        RuleFor(sale => sale.CreatedAt)
+        RuleFor(x => x.SaleDate)
             .NotEmpty()
-            .WithMessage("Creation date is required.");
+            .WithMessage("Sale date is required")
+            .LessThanOrEqualTo(DateTime.UtcNow)
+            .WithMessage("Sale date cannot be in the future");
 
-        RuleFor(sale => sale.CancelledAt)
+        RuleFor(x => x.Items)
+            .NotEmpty()
+            .WithMessage("At least one item is required");
+
+        RuleForEach(x => x.Items)
+            .SetValidator(new SaleItemValidator());
+
+        RuleFor(x => x.CreatedAt)
+            .NotEmpty();
+
+        RuleFor(x => x.CancelledAt)
             .Must((sale, cancelledAt) => !cancelledAt.HasValue || (cancelledAt.Value > sale.CreatedAt))
             .When(sale => sale.IsCancelled)
-            .WithMessage("Cancellation date must be after creation date.");
-
-        RuleFor(sale => sale.Items)
-            .NotEmpty()
-            .WithMessage("Sale must have at least one item.");
-
-        RuleForEach(sale => sale.Items)
-            .SetValidator(new SaleItemValidator());
+            .WithMessage("Cancellation date must be after creation date");
     }
 } 

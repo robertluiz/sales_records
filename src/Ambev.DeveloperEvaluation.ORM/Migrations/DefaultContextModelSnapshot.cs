@@ -179,6 +179,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<bool>("IsCancelled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -191,6 +194,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
 
                     b.Property<DateTime>("SaleDate")
                         .HasColumnType("timestamptz");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -212,15 +218,18 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("timestamptz");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamptz");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<decimal>("DiscountPercentage")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(5,2)")
-                        .HasDefaultValue(0m);
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
 
                     b.Property<bool>("IsCancelled")
                         .ValueGeneratedOnAdd()
@@ -230,6 +239,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ProductId1")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -237,17 +249,22 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Subtotal")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductId1");
 
                     b.HasIndex("SaleId");
 
@@ -355,10 +372,14 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
             modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.SaleItem", b =>
                 {
                     b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Product", "Product")
-                        .WithMany("SaleItems")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Product", null)
+                        .WithMany("SaleItems")
+                        .HasForeignKey("ProductId1");
 
                     b.HasOne("Ambev.DeveloperEvaluation.Domain.Entities.Sale", "Sale")
                         .WithMany("Items")

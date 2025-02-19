@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSaleFeature;
 
 /// <summary>
@@ -6,19 +8,21 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSaleFeature;
 public class UpdateSaleRequest
 {
     /// <summary>
-    /// Gets or sets the branch ID where the sale was made
+    /// Gets or sets the sale ID
     /// </summary>
-    public Guid BranchId { get; set; }
+    [Required(ErrorMessage = "Sale ID is required")]
+    public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the sale date
+    /// Gets or sets the sale observation
     /// </summary>
-    public DateTime SaleDate { get; set; }
+    [MaxLength(500, ErrorMessage = "Observation cannot be longer than 500 characters")]
+    public string? Observation { get; set; }
 
     /// <summary>
-    /// Gets or sets the sale items
+    /// Gets or sets the sale items to be updated
     /// </summary>
-    public List<UpdateSaleItemRequest> Items { get; set; } = new();
+    public List<UpdateSaleItemRequest>? Items { get; set; }
 }
 
 /// <summary>
@@ -27,17 +31,14 @@ public class UpdateSaleRequest
 public class UpdateSaleItemRequest
 {
     /// <summary>
-    /// Gets or sets the product ID
+    /// Gets or sets the item ID
     /// </summary>
-    public Guid ProductId { get; set; }
+    [Required(ErrorMessage = "Item ID is required")]
+    public Guid Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the quantity sold
+    /// Gets or sets the item observation
     /// </summary>
-    public int Quantity { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unit price
-    /// </summary>
-    public decimal UnitPrice { get; set; }
+    [MaxLength(200, ErrorMessage = "Observation cannot be longer than 200 characters")]
+    public string? Observation { get; set; }
 } 

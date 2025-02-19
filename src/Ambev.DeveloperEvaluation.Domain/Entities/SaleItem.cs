@@ -43,20 +43,24 @@ public class SaleItem : BaseEntity
     public decimal UnitPrice { get; set; }
     
     /// <summary>
-    /// Gets or sets the subtotal (quantity * unit price)
-    /// </summary>
-    public decimal Subtotal { get; set; }
-    
-    /// <summary>
-    /// Gets or sets the discount percentage applied to this item.
-    /// Based on quantity: 4+ items = 10%, 10-20 items = 20%
+    /// Gets or sets the discount percentage (0-100)
     /// </summary>
     public decimal DiscountPercentage { get; set; }
     
     /// <summary>
-    /// Gets or sets the total amount for this item after discounts.
+    /// Gets or sets the discount amount
     /// </summary>
-    public decimal TotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the subtotal before discount (quantity * unit price)
+    /// </summary>
+    public decimal Subtotal { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the total after discount
+    /// </summary>
+    public decimal Total { get; set; }
     
     /// <summary>
     /// Gets or sets whether this item has been cancelled.
@@ -82,34 +86,32 @@ public class SaleItem : BaseEntity
     }
 
     /// <summary>
-    /// Calculates the discount percentage based on quantity rules.
-    /// 4+ items = 10% discount
-    /// 10-20 items = 20% discount
+    /// Calculates the discount based on quantity
     /// </summary>
     public void CalculateDiscount()
     {
-        if (Quantity < 4)
+        if (Quantity > 20)
         {
-            DiscountPercentage = 0;
+            throw new InvalidOperationException("It's not possible to sell above 20 identical items");
         }
-        else if (Quantity >= 4 && Quantity < 10)
-        {
-            DiscountPercentage = 10;
-        }
-        else if (Quantity >= 10 && Quantity <= 20)
+
+        Subtotal = Quantity * UnitPrice;
+
+        if (Quantity >= 10 && Quantity <= 20)
         {
             DiscountPercentage = 20;
         }
-    }
+        else if (Quantity >= 4)
+        {
+            DiscountPercentage = 10;
+        }
+        else if (DiscountPercentage > 0)
+        {
+            throw new InvalidOperationException("Discount is not allowed for quantities below 4 items");
+        }
 
-    /// <summary>
-    /// Calculates the total amount for this item including discounts.
-    /// </summary>
-    public void CalculateTotalAmount()
-    {
-        decimal subtotal = Quantity * UnitPrice;
-        decimal discount = subtotal * (DiscountPercentage / 100);
-        TotalAmount = subtotal - discount;
+        DiscountAmount = Subtotal * (DiscountPercentage / 100);
+        Total = Subtotal - DiscountAmount;
     }
 
     /// <summary>

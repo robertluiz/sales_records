@@ -89,7 +89,9 @@ public class Program
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             var app = builder.Build();
-            app.UseMiddleware<ValidationExceptionMiddleware>();
+
+            // Use the new ExceptionHandlingMiddleware
+            app.UseExceptionHandling();
 
             // Check and apply pending migrations
             using (var scope = app.Services.CreateScope())

@@ -11,6 +11,11 @@ public class CreateSaleRequest
     public Guid BranchId { get; set; }
 
     /// <summary>
+    /// Gets or sets the customer ID who made the purchase
+    /// </summary>
+    public Guid CustomerId { get; set; }
+
+    /// <summary>
     /// Gets or sets the sale date
     /// </summary>
     public DateTime SaleDate { get; set; }
@@ -29,7 +34,7 @@ public class SaleItemRequest
     /// <summary>
     /// Gets or sets the product ID
     /// </summary>
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
 
     /// <summary>
     /// Gets or sets the quantity sold

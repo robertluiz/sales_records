@@ -14,6 +14,11 @@ public class CreateSaleCommand : IRequest<CreateSaleResult>
     public Guid BranchId { get; set; }
 
     /// <summary>
+    /// Gets or sets the customer ID who made the purchase
+    /// </summary>
+    public Guid CustomerId { get; set; }
+
+    /// <summary>
     /// Gets or sets the sale date
     /// </summary>
     public DateTime SaleDate { get; set; }
@@ -38,9 +43,4 @@ public class SaleItemCommand
     /// Gets or sets the quantity sold
     /// </summary>
     public int Quantity { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unit price
-    /// </summary>
-    public decimal UnitPrice { get; set; }
 } 

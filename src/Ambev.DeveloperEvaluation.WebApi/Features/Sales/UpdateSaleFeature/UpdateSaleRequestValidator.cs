@@ -3,54 +3,58 @@ using FluentValidation;
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSaleFeature;
 
 /// <summary>
-/// Validator for UpdateSaleRequest
+/// Validator for the update sale request
 /// </summary>
 public class UpdateSaleRequestValidator : AbstractValidator<UpdateSaleRequest>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UpdateSaleRequestValidator"/> class
+    /// Initializes a new instance of the validator with defined rules
     /// </summary>
     public UpdateSaleRequestValidator()
     {
-        RuleFor(x => x.BranchId)
+        RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("O ID da filial é obrigatório");
+            .WithMessage("Sale ID is required");
 
-        RuleFor(x => x.SaleDate)
-            .NotEmpty()
-            .WithMessage("A data da venda é obrigatória")
-            .LessThanOrEqualTo(DateTime.UtcNow)
-            .WithMessage("A data da venda não pode ser futura");
+        When(x => x.Observation != null, () =>
+        {
+            RuleFor(x => x.Observation)
+                .MaximumLength(500)
+                .WithMessage("Observation cannot be longer than 500 characters");
+        });
 
-        RuleFor(x => x.Items)
-            .NotEmpty()
-            .WithMessage("A venda deve conter pelo menos um item");
-
-        RuleForEach(x => x.Items)
-            .SetValidator(new UpdateSaleItemRequestValidator());
+        When(x => x.Items != null, () =>
+        {
+            RuleFor(x => x.Items)
+                .NotEmpty()
+                .WithMessage("Items list cannot be empty when provided")
+                .ForEach(item =>
+                {
+                    item.SetValidator(new UpdateSaleItemRequestValidator());
+                });
+        });
     }
 }
 
 /// <summary>
-/// Validator for UpdateSaleItemRequest
+/// Validator for the update sale item request
 /// </summary>
 public class UpdateSaleItemRequestValidator : AbstractValidator<UpdateSaleItemRequest>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="UpdateSaleItemRequestValidator"/> class
+    /// Initializes a new instance of the validator with defined rules
     /// </summary>
     public UpdateSaleItemRequestValidator()
     {
-        RuleFor(x => x.ProductId)
+        RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("O ID do produto é obrigatório");
+            .WithMessage("Item ID is required");
 
-        RuleFor(x => x.Quantity)
-            .GreaterThan(0)
-            .WithMessage("A quantidade deve ser maior que zero");
-
-        RuleFor(x => x.UnitPrice)
-            .GreaterThan(0)
-            .WithMessage("O preço unitário deve ser maior que zero");
+        When(x => x.Observation != null, () =>
+        {
+            RuleFor(x => x.Observation)
+                .MaximumLength(200)
+                .WithMessage("Observation cannot be longer than 200 characters");
+        });
     }
 } 

@@ -1,12 +1,12 @@
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 
 /// <summary>
-/// Represents the result of creating a new sale
+/// Result of creating a new sale
 /// </summary>
 public class CreateSaleResult
 {
     /// <summary>
-    /// Gets or sets the ID of the created sale
+    /// Gets or sets the sale ID
     /// </summary>
     public Guid Id { get; set; }
 
@@ -21,7 +21,17 @@ public class CreateSaleResult
     public DateTime SaleDate { get; set; }
 
     /// <summary>
-    /// Gets or sets the total amount of the sale
+    /// Gets or sets the subtotal amount before discounts
+    /// </summary>
+    public decimal Subtotal { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total discount amount
+    /// </summary>
+    public decimal DiscountAmount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total amount after discounts
     /// </summary>
     public decimal TotalAmount { get; set; }
 
@@ -32,7 +42,7 @@ public class CreateSaleResult
 }
 
 /// <summary>
-/// Represents a sale item in the result
+/// Result of creating a sale item
 /// </summary>
 public class SaleItemResult
 {
@@ -57,7 +67,22 @@ public class SaleItemResult
     public decimal UnitPrice { get; set; }
 
     /// <summary>
-    /// Gets or sets the subtotal (quantity * unit price)
+    /// Gets or sets the discount percentage (0-100)
+    /// </summary>
+    public decimal DiscountPercentage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the discount amount
+    /// </summary>
+    public decimal DiscountAmount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the subtotal before discount (quantity * unit price)
     /// </summary>
     public decimal Subtotal { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total after discount
+    /// </summary>
+    public decimal Total { get; set; }
 } 

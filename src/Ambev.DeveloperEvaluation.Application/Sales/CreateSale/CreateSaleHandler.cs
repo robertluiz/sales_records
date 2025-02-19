@@ -12,23 +12,23 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleResult>
 {
     private readonly ISaleRepository _saleRepository;
-    private readonly IBranchRepository _branchRepository;
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
+    private readonly CreateSaleCommandValidator _validator;
 
     /// <summary>
     /// Initializes a new instance of the handler with required dependencies
     /// </summary>
     public CreateSaleHandler(
         ISaleRepository saleRepository,
-        IBranchRepository branchRepository,
         IProductRepository productRepository,
-        IMapper mapper)
+        IMapper mapper,
+        CreateSaleCommandValidator validator)
     {
         _saleRepository = saleRepository;
-        _branchRepository = branchRepository;
         _productRepository = productRepository;
         _mapper = mapper;
+        _validator = validator;
     }
 
     /// <summary>
@@ -36,29 +36,41 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
     /// </summary>
     public async Task<CreateSaleResult> Handle(CreateSaleCommand request, CancellationToken cancellationToken)
     {
-        var validator = new CreateSaleCommandValidator();
-        await validator.ValidateAndThrowAsync(request, cancellationToken);
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
 
-        var branch = await _branchRepository.GetByIdAsync(request.BranchId, cancellationToken);
-        if (branch == null)
-            throw new InvalidOperationException("Branch not found");
+        if (request.Items == null || !request.Items.Any())
+            throw new ValidationException("At least one item is required");
 
-        var sale = _mapper.Map<Sale>(request);
-        sale.Id = Guid.NewGuid();
+        await _validator.ValidateAndThrowAsync(request, cancellationToken);
 
-        foreach (var item in sale.Items)
+        var sale = new Sale
         {
-            var product = await _productRepository.GetByIdAsync(item.ProductId, cancellationToken);
-            if (product == null)
-                throw new InvalidOperationException($"Product not found: {item.ProductId}");
+            CreatedAt = DateTime.UtcNow,
+            Number = $"SALE-{DateTime.UtcNow:yyyyMMddHHmmss}",
+            BranchId = request.BranchId,
+            Items = new List<SaleItem>()
+        };
 
-            item.Id = Guid.NewGuid();
-            item.SaleId = sale.Id;
-            item.Subtotal = item.Quantity * item.UnitPrice;
+        foreach (var requestItem in request.Items)
+        {
+            var product = await _productRepository.GetByIdAsync(requestItem.ProductId, cancellationToken);
+            if (product == null)
+                throw new InvalidOperationException($"Product not found: {requestItem.ProductId}");
+
+            var saleItem = new SaleItem
+            {
+                ProductId = requestItem.ProductId,
+                Quantity = requestItem.Quantity,
+                UnitPrice = product.Price,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            saleItem.CalculateDiscount();
+            sale.Items.Add(saleItem);
         }
 
-        sale.TotalAmount = sale.Items.Sum(x => x.Subtotal);
-
+        sale.CalculateTotals();
         await _saleRepository.AddAsync(sale, cancellationToken);
         await _saleRepository.SaveChangesAsync(cancellationToken);
 

@@ -44,7 +44,7 @@ public class UpdateSaleItemResponse
     /// <summary>
     /// Gets or sets the product ID
     /// </summary>
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
 
     /// <summary>
     /// Gets or sets the quantity sold
