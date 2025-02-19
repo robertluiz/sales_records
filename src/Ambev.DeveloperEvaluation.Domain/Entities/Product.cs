@@ -79,6 +79,12 @@ public class Product : BaseEntity
     public DateTime? UpdatedAt { get; set; }
     
     /// <summary>
+    /// Gets or sets the date and time when the product was deleted.
+    /// Null if the product has not been deleted.
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
+    
+    /// <summary>
     /// Gets or sets the collection of sale items containing this product.
     /// </summary>
     public virtual ICollection<SaleItem> SaleItems { get; set; }

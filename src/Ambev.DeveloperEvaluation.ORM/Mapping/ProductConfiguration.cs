@@ -58,6 +58,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.UpdatedAt)
             .HasColumnType("timestamptz");
 
+        builder.Property(x => x.DeletedAt)
+            .HasColumnType("timestamptz");
+
         builder.OwnsOne(x => x.Rating, rating =>
         {
             rating.Property(r => r.Rate)

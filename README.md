@@ -1,94 +1,181 @@
-# Developer Evaluation Project
+# Ambev Developer Evaluation
 
-`READ CAREFULLY`
+Sales management system developed in .NET 8 following Clean Architecture and DDD principles.
 
-## Instructions
+[🇧🇷 Versão em Português](README.pt-BR.md)
 
-**The test below will have up to 7 calendar days to be delivered from the date of receipt of this manual.**
+## 🚀 Technologies
 
-- The code must be versioned in a public Github repository and a link must be sent for evaluation once completed
-- Upload this template to your repository and start working from it
-- Read the instructions carefully and make sure all requirements are being addressed
-- The repository must provide instructions on how to configure, execute and test the project
-- Documentation and overall organization will also be taken into consideration
+- .NET 8.0
+- PostgreSQL 13
+- Entity Framework Core
+- MediatR
+- AutoMapper
+- FluentValidation
+- BCrypt.NET
+- Rebus (Message Bus)
+- xUnit
+- Docker & Docker Compose
 
-## Use Case
+## 📁 Project Structure
 
-**You are a developer on the DeveloperStore team. Now we need to implement the API prototypes.**
+```
+src/
+├── Ambev.DeveloperEvaluation.Application  # Application layer (use cases)
+├── Ambev.DeveloperEvaluation.Common       # Shared components
+├── Ambev.DeveloperEvaluation.Domain       # Domain layer
+├── Ambev.DeveloperEvaluation.IoC          # Dependency injection configuration
+├── Ambev.DeveloperEvaluation.ORM          # Persistence layer
+├── Ambev.DeveloperEvaluation.Services     # Integration services and message handlers
+└── Ambev.DeveloperEvaluation.WebApi       # REST API
 
-As we work with `DDD`, to reference entities from other domains, we use the `External Identities` pattern with denormalization of entity descriptions.
+tests/
+├── Ambev.DeveloperEvaluation.Unit         # Unit tests
+├── Ambev.DeveloperEvaluation.Integration  # Integration tests
+└── Ambev.DeveloperEvaluation.Functional   # Functional tests
+```
 
-Therefore, you will write an API (complete CRUD) that handles sales records. The API needs to be able to inform:
+## 🏗️ Architecture
 
-- Sale number
-- Date when the sale was made
-- Customer
-- Total sale amount
-- Branch where the sale was made
-- Products
-- Quantities
-- Unit prices
-- Discounts
-- Total amount for each item
-- Cancelled/Not Cancelled
+The project follows Clean Architecture and Domain-Driven Design (DDD) principles:
 
-It's not mandatory, but it would be a differential to build code for publishing events of:
+- **Domain Layer**: Contains entities, business rules, and repository interfaces
+- **Application Layer**: Implements application use cases using CQRS pattern with MediatR
+- **Infrastructure Layer**: Repository implementation and data access using Entity Framework Core
+- **Services Layer**: Handles integration services and message bus operations with Rebus
+- **WebApi Layer**: REST Controllers and API configuration
 
-- SaleCreated
-- SaleModified
-- SaleCancelled
-- ItemCancelled
+## 🗃️ Initial Data (Seeds)
 
-If you write the code, **it's not required** to actually publish to any Message Broker. You can log a message in the application log or however you find most convenient.
+### Users
 
-### Business Rules
+- Admin:
+  - Id: 7c9e6679-7425-40de-944b-e07fc1f90ae1
+  - Email: admin@ambev.com.br
+  - Password: Admin@123
+  - Role: Admin
+- Customer:
+  - Id: 7c9e6679-7425-40de-944b-e07fc1f90ae2
+  - Email: customer@email.com
+  - Password: Admin@123
+  - Role: Customer
 
-- Purchases above 4 identical items have a 10% discount
-- Purchases between 10 and 20 identical items have a 20% discount
-- It's not possible to sell above 20 identical items
-- Purchases below 4 items cannot have a discount
+### Products
 
-These business rules define quantity-based discounting tiers and limitations:
+- Brahma Duplo Malte 350ml (Id: 1, Code: BEER-001, $4.99)
+- Skol Puro Malte 350ml (Id: 2, Code: BEER-002, $4.49)
+- Original 600ml (Id: 3, Code: BEER-003, $8.99)
+- Corona Extra 330ml (Id: 4, Code: BEER-004, $7.99)
 
-1. Discount Tiers:
+### Branches
 
-   - 4+ items: 10% discount
-   - 10-20 items: 20% discount
+- São Paulo Headquarters (Id: 7c9e6679-7425-40de-944b-e07fc1f90ae7, Code: MATRIX-001)
+- Rio de Janeiro Branch (Id: 9c9e6679-7425-40de-944b-e07fc1f90ae8, Code: BRANCH-RJ-001)
+- Belo Horizonte Branch (Id: 5c9e6679-7425-40de-944b-e07fc1f90ae9, Code: BRANCH-BH-001)
+- Curitiba Branch (Id: 3c9e6679-7425-40de-944b-e07fc1f90ae0, Code: BRANCH-CWB-001)
 
-2. Restrictions:
-   - Maximum limit: 20 items per product
-   - No discounts allowed for quantities below 4 items
+## 🚦 Business Rules
 
-## Overview
+- Quantity-based discounts:
+  - 4-9 items: 10% discount
+  - 10-20 items: 20% discount
+- Restrictions:
+  - Maximum of 20 identical items per sale
+  - No discount for less than 4 items
 
-This section provides a high-level overview of the project and the various skills and competencies it aims to assess for developer candidates.
+## 🛠️ How to Run
 
-See [Overview](.doc/overview.md)
+### Prerequisites
 
-## Tech Stack
+- Docker
+- Docker Compose
+- .NET 8 SDK (for development)
 
-This section lists the key technologies used in the project, including the backend, testing, frontend, and database components.
+### Using Docker Compose
 
-See [Tech Stack](.doc/tech-stack.md)
+1. Clone the repository:
 
-## Frameworks
+```bash
+git clone <repository-url>
+cd sales_records
+```
 
-This section outlines the frameworks and libraries that are leveraged in the project to enhance development productivity and maintainability.
+2. Run the project using Docker Compose:
 
-See [Frameworks](.doc/frameworks.md)
+```bash
+docker-compose up -d
+```
 
-<!--
-## API Structure
-This section includes links to the detailed documentation for the different API resources:
-- [API General](.docs/general-api.md)
-- [Products API](.doc/products-api.md)
-- [Carts API](.doc/carts-api.md)
-- [Users API](.doc/users-api.md)
-- [Auth API](.doc/auth-api.md)
--->
+The API will be available at: http://localhost:8080
+Swagger UI: http://localhost:8080/swagger
 
-## Project Structure
+### Local Development
 
-This section describes the overall structure and organization of the project files and directories.
+1. Restore packages:
 
-See [Project Structure](.doc/project-structure.md)
+```bash
+dotnet restore Ambev.DeveloperEvaluation.sln
+```
+
+2. Run tests:
+
+```bash
+dotnet test Ambev.DeveloperEvaluation.sln
+```
+
+3. Run the project:
+
+```bash
+cd src/Ambev.DeveloperEvaluation.WebApi
+dotnet run
+```
+
+## 📡 API
+
+A Postman collection is available in the `Ambev.DeveloperEvaluation.postman_collection.json` file with examples of all requests.
+
+### Main Endpoints:
+
+- `POST /api/auth/login` - Authentication
+- `GET /api/sales` - List sales
+- `POST /api/sales` - Create sale
+- `GET /api/sales/{id}` - Sale details
+- `PUT /api/sales/{id}/cancel` - Cancel sale
+- `PUT /api/sales/{id}/items/{itemId}/cancel` - Cancel sale item
+
+### Documentation
+
+Complete API documentation is available through Swagger UI at:
+
+- Development: http://localhost:8080/swagger
+- Production: https://your-domain/swagger
+
+## 🔐 Security
+
+- JWT Authentication
+- Passwords encrypted using BCrypt
+- HTTPS enabled
+- Input validation using FluentValidation
+
+## 📊 Database
+
+- PostgreSQL 13
+- Automatic migrations
+- Initial data (seeds) for testing
+- Optimized indexes for frequent queries
+
+## 🧪 Tests
+
+The project includes:
+
+- 144 unit tests
+
+Run the tests with:
+
+```bash
+dotnet test Ambev.DeveloperEvaluation.sln
+```
+
+## 📝 License
+
+This project is under the MIT license.

@@ -24,13 +24,16 @@ public class ProductRepository : IProductRepository
     /// <inheritdoc/>
     public async Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Products.FindAsync(new object[] { id }, cancellationToken);
+        return await _context.Products
+            .Where(x => x.DeletedAt == null)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task<Product?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .Where(x => x.DeletedAt == null)
             .Include(x => x.SaleItems)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
@@ -51,7 +54,9 @@ public class ProductRepository : IProductRepository
     /// <inheritdoc/>
     public Task DeleteAsync(Product product, CancellationToken cancellationToken = default)
     {
-        _context.Products.Remove(product);
+        product.DeletedAt = DateTime.UtcNow;
+        product.IsActive = false;
+        _context.Entry(product).State = EntityState.Modified;
         return Task.CompletedTask;
     }
 
