@@ -1,5 +1,6 @@
 using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Common;
+using Ambev.DeveloperEvaluation.Domain.Models;
 using Ambev.DeveloperEvaluation.Domain.Validation;
 using System.ComponentModel.DataAnnotations;
 
@@ -12,10 +13,21 @@ namespace Ambev.DeveloperEvaluation.Domain.Entities;
 public class Product : BaseEntity
 {
     /// <summary>
-    /// Gets or sets the unique product code.
+    /// Gets or sets the product ID
+    /// </summary>
+    public new int Id { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the product code.
     /// Must not be null or empty.
     /// </summary>
     public string Code { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets or sets the product title.
+    /// Must not be null or empty.
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
     
     /// <summary>
     /// Gets or sets the product name.
@@ -30,10 +42,25 @@ public class Product : BaseEntity
     public string? Description { get; set; }
     
     /// <summary>
+    /// Gets or sets the product category.
+    /// </summary>
+    public string Category { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// Gets or sets the product image URL.
+    /// </summary>
+    public string? Image { get; set; }
+    
+    /// <summary>
     /// Gets or sets the product price.
     /// Must be greater than zero.
     /// </summary>
     public decimal Price { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the product rating information
+    /// </summary>
+    public ProductRating Rating { get; set; } = new();
     
     /// <summary>
     /// Gets or sets whether the product is active.
@@ -62,8 +89,9 @@ public class Product : BaseEntity
     public Product()
     {
         CreatedAt = DateTime.UtcNow;
-        SaleItems = new List<SaleItem>();
+        SaleItems = new HashSet<SaleItem>();
         IsActive = true;
+        Rating = new ProductRating();
     }
 
     /// <summary>
@@ -90,27 +118,26 @@ public class Product : BaseEntity
     /// <param name="newPrice">The new price to set.</param>
     public void UpdatePrice(decimal newPrice)
     {
-        if (newPrice > 0)
-        {
-            Price = newPrice;
-            UpdatedAt = DateTime.UtcNow;
-        }
+        if (newPrice <= 0)
+            throw new ArgumentException("Price must be greater than zero", nameof(newPrice));
+
+        Price = newPrice;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Performs validation of the product using the ProductValidator rules.
+    /// Validates the product
     /// </summary>
-    /// <returns>
-    /// A <see cref="ValidationResultDetail"/> containing validation results.
-    /// </returns>
+    /// <returns>The validation result</returns>
     public ValidationResultDetail Validate()
     {
         var validator = new ProductValidator();
-        var result = validator.Validate(this);
+        var validationResult = validator.Validate(this);
+
         return new ValidationResultDetail
         {
-            IsValid = result.IsValid,
-            Errors = result.Errors.Select(o => (ValidationErrorDetail)o)
+            IsValid = validationResult.IsValid,
+            Errors = validationResult.Errors.Select(e => (ValidationErrorDetail)e).ToList()
         };
     }
 } 

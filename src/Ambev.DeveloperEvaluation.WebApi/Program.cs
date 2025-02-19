@@ -9,6 +9,8 @@ using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -27,7 +29,41 @@ public class Program
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Ambev Developer Evaluation API",
+                    Version = "v1",
+                    Description = "API para avaliação de desenvolvedores da Ambev"
+                });
+
+                c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+
+                c.CustomSchemaIds(type => type.FullName);
+            });
 
             builder.Services.AddDbContext<DefaultContext>(options =>
                 options.UseNpgsql(

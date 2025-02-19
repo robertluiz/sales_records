@@ -17,9 +17,13 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
             .IsRequired()
             .HasMaxLength(50);
 
+        builder.Property(x => x.SaleDate)
+            .IsRequired()
+            .HasColumnType("timestamptz");
+
         builder.Property(x => x.CreatedAt)
             .IsRequired()
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         builder.Property(x => x.TotalAmount)
             .IsRequired()
@@ -30,7 +34,7 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
             .HasDefaultValue(false);
 
         builder.Property(x => x.CancelledAt)
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         builder.HasOne(x => x.Customer)
             .WithMany()

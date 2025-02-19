@@ -5,14 +5,15 @@ using Microsoft.EntityFrameworkCore;
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
 /// <summary>
-/// Implementation of the product repository using Entity Framework Core
+/// Implementation of the product repository using Entity Framework Core.
+/// This class provides CRUD operations and specialized queries for the Product entity.
 /// </summary>
 public class ProductRepository : IProductRepository
 {
     private readonly DefaultContext _context;
 
     /// <summary>
-    /// Initializes a new instance of the ProductRepository class
+    /// Initializes a new instance of the product repository
     /// </summary>
     /// <param name="context">The database context</param>
     public ProductRepository(DefaultContext context)
@@ -21,18 +22,17 @@ public class ProductRepository : IProductRepository
     }
 
     /// <inheritdoc/>
-    public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Products
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        return await _context.Products.FindAsync(new object[] { id }, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<Product?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Product?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Products
-            .Include(p => p.SaleItems)
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+            .Include(x => x.SaleItems)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -59,5 +59,55 @@ public class ProductRepository : IProductRepository
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<(List<Product> Products, int TotalCount)> ListAsync(
+        int page,
+        int pageSize,
+        string? category = null,
+        decimal? minPrice = null,
+        decimal? maxPrice = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Products.AsQueryable();
+
+        // Apply filters
+        if (category != null)
+        {
+            query = query.Where(p => p.Category == category);
+        }
+
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= minPrice.Value);
+        }
+
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= maxPrice.Value);
+        }
+
+        // Get total count after applying filters
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply pagination and ordering
+        var products = await query
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (products, totalCount);
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<string>> ListCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Products
+            .Select(p => p.Category)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync(cancellationToken);
     }
 } 

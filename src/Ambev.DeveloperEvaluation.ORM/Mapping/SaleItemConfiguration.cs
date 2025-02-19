@@ -30,16 +30,20 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
             .IsRequired()
             .HasColumnType("decimal(18,2)");
 
+        builder.Property(x => x.Subtotal)
+            .IsRequired()
+            .HasColumnType("decimal(18,2)");
+
         builder.Property(x => x.IsCancelled)
             .IsRequired()
             .HasDefaultValue(false);
 
         builder.Property(x => x.CancelledAt)
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         builder.Property(x => x.CreatedAt)
             .IsRequired()
-            .HasColumnType("timestamp");
+            .HasColumnType("timestamptz");
 
         builder.HasOne(x => x.Product)
             .WithMany(x => x.SaleItems)

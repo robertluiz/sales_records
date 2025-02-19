@@ -64,10 +64,16 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
 
             modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.Product", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -75,9 +81,13 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Image")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -94,10 +104,17 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Category");
 
                     b.HasIndex("Code")
                         .IsUnique();
@@ -116,10 +133,10 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
@@ -133,6 +150,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("SaleDate")
+                        .HasColumnType("timestamptz");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -154,10 +174,10 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<decimal>("DiscountPercentage")
                         .ValueGeneratedOnAdd()
@@ -169,14 +189,17 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("SaleId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -239,6 +262,37 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.Product", b =>
+                {
+                    b.OwnsOne("Ambev.DeveloperEvaluation.Domain.Models.ProductRating", "Rating", b1 =>
+                        {
+                            b1.Property<int>("ProductId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Count")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasDefaultValue(0)
+                                .HasColumnName("RatingCount");
+
+                            b1.Property<decimal>("Rate")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("decimal(3,2)")
+                                .HasDefaultValue(0m)
+                                .HasColumnName("Rating");
+
+                            b1.HasKey("ProductId");
+
+                            b1.ToTable("Products");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductId");
+                        });
+
+                    b.Navigation("Rating")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Ambev.DeveloperEvaluation.Domain.Entities.Sale", b =>

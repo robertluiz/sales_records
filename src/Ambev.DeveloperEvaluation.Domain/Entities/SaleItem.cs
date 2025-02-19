@@ -24,7 +24,7 @@ public class SaleItem : BaseEntity
     /// <summary>
     /// Gets or sets the product ID for this item.
     /// </summary>
-    public Guid ProductId { get; set; }
+    public int ProductId { get; set; }
     
     /// <summary>
     /// Gets or sets the product associated with this item.
