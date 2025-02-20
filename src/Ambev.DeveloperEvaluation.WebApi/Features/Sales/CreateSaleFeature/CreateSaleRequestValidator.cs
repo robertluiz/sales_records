@@ -49,8 +49,5 @@ public class SaleItemRequestValidator : AbstractValidator<SaleItemRequest>
             .GreaterThan(0)
             .WithMessage("A quantidade deve ser maior que zero");
 
-        RuleFor(x => x.UnitPrice)
-            .GreaterThan(0)
-            .WithMessage("O preço unitário deve ser maior que zero");
     }
 } 

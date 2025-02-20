@@ -59,16 +59,29 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
             Items = new List<SaleItem>()
         };
 
-        foreach (var requestItem in request.Items)
+        // Agrupar itens por ProductId e somar suas quantidades
+        var groupedItems = request.Items
+            .GroupBy(item => item.ProductId)
+            .Select(group => new
+            {
+                ProductId = group.Key,
+                TotalQuantity = group.Sum(item => item.Quantity)
+            });
+
+        foreach (var groupedItem in groupedItems)
         {
-            var product = await _productRepository.GetByIdAsync(requestItem.ProductId, cancellationToken);
+            var product = await _productRepository.GetByIdAsync(groupedItem.ProductId, cancellationToken);
             if (product == null)
-                throw new InvalidOperationException($"Product not found: {requestItem.ProductId}");
+                throw new InvalidOperationException($"Product not found: {groupedItem.ProductId}");
+
+            // Validar a quantidade total após o agrupamento
+            if (groupedItem.TotalQuantity > 20)
+                throw new ValidationException($"Total quantity for product {groupedItem.ProductId} exceeds maximum limit of 20");
 
             var saleItem = new SaleItem
             {
-                ProductId = requestItem.ProductId,
-                Quantity = requestItem.Quantity,
+                ProductId = groupedItem.ProductId,
+                Quantity = groupedItem.TotalQuantity,
                 UnitPrice = product.Price,
                 CreatedAt = DateTime.UtcNow
             };
